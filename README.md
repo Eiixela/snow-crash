@@ -573,3 +573,38 @@ Check flag.Here is your token : 25749xKZ8L7DkSCwJkT9dyv6f
 
 ### Level09
 
+Level09 is the last level. We, once again, get a binary file and a token file.
+When executing the binary we get something like this :
+```
+./level09 0
+0
+./level09 01
+02
+./level09 1
+1
+./level09 11
+12
+```
+
+So basically the binary adds the index number to the actual ASCII value of each char in the input.
+
+The token we're given looks like this :
+```
+f4kmm6p|=<82>^?p<82>n<83><82>DB<83>Du{^?<8C><89>
+```
+
+So we decided to do the same thing as the binary and add the index to the value of each char in the toke string, but it didn't work.
+We then tried to substract the index to the ASCII value of each char in the token, which gave us:
+```
+66 34 6b 6d 6d 36 70 7c 3d 82 7f 70 82 6e 83 82 44 42 83 44 75 7b 7f 8c 89 0a (in hexa)
+```
+
+And sure enought that gave us the flag :
+```
+f3iji1ju5yuevaus41q1afiuq
+```
+
+And token :
+```
+s5cAJpM8ev6XHw998pRWG728z
+```
